@@ -1,11 +1,16 @@
+using Microsoft.EntityFrameworkCore;
 using P2_AP1_JesusBonilla.Components;
+using P2_AP1_JesusBonilla.DAL;
+using P2_AP1_JesusBonilla.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-
+var ConexionString = builder.Configuration.GetConnectionString("ConStr");
+builder.Services.AddDbContextFactory<Contexto>(options => options.UseSqlite(ConexionString));
+builder.Services.AddScoped<RegistrosServices>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
