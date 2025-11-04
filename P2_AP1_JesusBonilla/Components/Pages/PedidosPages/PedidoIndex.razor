@@ -1,0 +1,121 @@
+﻿@page "/Pedido/Index"
+@inject PedidosServices pedidosService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Pedidos</PageTitle>
+
+<div class="container mt-3">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title text-center">
+                <strong>Consulta de Pedidos</strong>
+            </h5>
+
+            <div class="d-flex justify-content-end">
+                <a class="btn btn-primary bi bi-plus-square" href="/Pedido/Create"> Crear pedido </a>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-12 col-md-3">
+                    <label class="col-form-label"><strong>Desde</strong></label>
+                    <InputDate class="form-control" @bind-Value="Desde" />
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <label class="col-form-label"><strong>Hasta</strong></label>
+                    <InputDate class="form-control" @bind-Value="Hasta" />
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <label class="col-form-label"><strong>Filtrar por</strong></label>
+                    <InputSelect class="form-select" @bind-Value="filtro">
+                        <option value="" disabled selected>Elija una opción</option>
+                        <option value="PedidoId">Pedido Id</option>
+                        <option value="ClienteNombre">Nombre del cliente</option>
+                    </InputSelect>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <label class="col-form-label"><strong>Busqueda</strong></label>
+                    <div class="input-group">
+                        <input class="form-control" @bind="valorFiltro" />
+                        <button type="button" class="btn btn-outline-info" @onclick="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-striped text-center">
+                    <thead>
+                        <tr>
+                            <th>PedidoId</th>
+                            <th>Fecha</th>
+                            <th>NombreCliente</th>
+                            <th>Opciones</th>
+                        </tr>
+                    </thead>
+
+                    @if (ListaPedidos.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="5">No se han encontrado pedidos</td>
+                        </tr>
+                    }
+
+                    @foreach (var pedido in ListaPedidos)
+                    {
+                        <tr class="text-center">
+                            <td>@pedido.PedidoId</td>
+                            <td>@pedido.Fecha.ToShortDateString()</td>
+                            <td>@pedido.NombreCliente</td>
+                            <td>
+                                <a href="/Pedido/Create/@pedido.PedidoId" class="btn btn-outline-info bi bi-pencil-square"></a>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public DateTime? Desde { get; set; }
+    public DateTime? Hasta { get; set; }
+    public string filtro { get; set; } = null!;
+    public string valorFiltro { get; set; } = string.Empty;
+
+    public List<Pedidos> ListaPedidos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Buscar();
+    }
+
+    public async Task Buscar()
+    {
+        var lista = await pedidosService.Listar(p => true);
+
+        if (Desde.HasValue && Hasta.HasValue)
+        {
+            lista = lista.Where(p => p.Fecha >= Desde && p.Fecha <= Hasta).ToList();
+        }
+        else if (filtro == nameof(Pedidos.PedidoId) && int.TryParse(valorFiltro, out int id))
+        {
+            lista = lista.Where(p => p.PedidoId == id).ToList();
+        }
+        else if (filtro == nameof(Pedidos.NombreCliente))
+        {
+            lista = lista.Where(p => p.NombreCliente.Contains(valorFiltro, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        ListaPedidos = lista;
+    }
+}
+

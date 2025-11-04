@@ -6,6 +6,8 @@ namespace P2_AP1_JesusBonilla.DAL
     public class Contexto : DbContext
     {
         public DbSet<Componente> Componentes { get; set; }
+        public DbSet<Pedidos> Pedidos { get; set; }
+        public DbSet<PedidosDetalle> PedidosDetalles { get; set; }
         public Contexto(DbContextOptions<Contexto> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -37,6 +39,7 @@ namespace P2_AP1_JesusBonilla.DAL
                     }
                 );
             });
+
         }
     }
 }
